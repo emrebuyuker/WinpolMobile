@@ -1,4 +1,4 @@
-package com.buyukeryazilim.winpolmobile;
+package com.buyukeryazilim.winpolmobil;
 
 import android.content.Context;
 import android.content.SharedPreferences;

@@ -1,4 +1,4 @@
-package com.buyukeryazilim.winpolmobile;
+package com.buyukeryazilim.winpolmobil;
 
 import android.content.Intent;
 import android.os.Bundle;
