@@ -25,6 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class AdminPage extends AppCompatActivity {
 
@@ -72,9 +73,14 @@ public class AdminPage extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
 
+                            UUID uuid = UUID.randomUUID();
+                            String uuidString = uuid.toString();
+
                             Toast.makeText(getApplicationContext(),"User Created",Toast.LENGTH_LONG).show();
                             String emailTextStr = emailText.getText().toString().replace("."," ");
                             myRef.child("Companies").child(spinCompanyName.getSelectedItem().toString()).child("users").child(emailTextStr).child("password").setValue(passwordText.getText().toString());
+                            //myRef.child("Companies").child(spinCompanyName.getSelectedItem().toString()).child("users").child(emailTextStr).child(uuidString).child("lisans").setValue(uuidString);
+                            myRef.child("Companies").child("licences").child(emailTextStr).child("licence").setValue(uuidString);
 
                             Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
                             startActivity(intent);
@@ -107,11 +113,14 @@ public class AdminPage extends AppCompatActivity {
 
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
 
-                    HashMap<String, Object> hashMap = (HashMap<String, Object>) ds.getValue();
-                    companyNamesFB.add((String) hashMap.get("companyName"));
+                    if (!ds.getKey().equals("licences")){
+
+                        HashMap<String, Object> hashMap = (HashMap<String, Object>) ds.getValue();
+                        companyNamesFB.add((String) hashMap.get("companyName"));
+                    }
                 }
 
-                //spinner uni
+
                 ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(context  , android.R.layout.simple_spinner_dropdown_item, companyNamesFB);
                 dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinCompanyName.setAdapter(dataAdapter);

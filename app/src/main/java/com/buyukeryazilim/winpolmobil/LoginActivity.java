@@ -16,8 +16,15 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class LoginActivity extends AppCompatActivity {
+
+    String licenceDb;
 
     private FirebaseAuth mAuth;
 
@@ -30,10 +37,12 @@ public class LoginActivity extends AppCompatActivity {
 
     SharedPreferenc sharedPreferenc;
 
+    FirebaseDatabase firebaseDatabase;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_query_page);
+        setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -44,68 +53,113 @@ public class LoginActivity extends AppCompatActivity {
 
         context = this;
 
+        firebaseDatabase = FirebaseDatabase.getInstance();
+
         sharedPreferenc = new SharedPreferenc();
 
-        if(sharedPreferenc.getValueBoolean(context,"checkBox")){
+        if (sharedPreferenc.getValueBoolean(context, "checkBox")) {
 
-            emailText.setText(sharedPreferenc.getValue(context,"email"));
-            passwordText.setText(sharedPreferenc.getValue(context,"password"));
+            emailText.setText(sharedPreferenc.getValue(context, "email"));
+            passwordText.setText(sharedPreferenc.getValue(context, "password"));
             chBxLogin.setChecked(true);
         }
     }
 
-    public void signIn (View view) {
+    public void signIn(View view) {
 
-        try {
+        if (emailText.getText().toString().equals("admin@buyukeryazilim.com") && passwordText.getText().toString().equals("buyuker")) {
+            Intent intent = new Intent(getApplicationContext(), LicencePage.class);
+            startActivity(intent);
+        } else {
 
-            mAuth.signInWithEmailAndPassword(emailText.getText().toString(), passwordText.getText().toString())
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
+            try {
 
-                                FirebaseUser user = mAuth.getCurrentUser();
+                mAuth.signInWithEmailAndPassword(emailText.getText().toString(), passwordText.getText().toString())
+                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
 
-                                Intent intent = new Intent(getApplicationContext(),QueryPageActivity.class);
-                                startActivity(intent);
+                                    FirebaseUser user = mAuth.getCurrentUser();
 
+                                    /*String licence = sharedPreferenc.getValue(context, "licence");
+
+                                    Intent intent = new Intent(getApplicationContext(), QueryPageActivity.class);
+                                    startActivity(intent);*/
+
+                                    getDataFirebase();
+
+                                }
                             }
-                        }
-                    }).addOnFailureListener(this, new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
+                        }).addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
 
-                    Toast.makeText(getApplicationContext(),e.getLocalizedMessage().toString(),Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), e.getLocalizedMessage().toString(), Toast.LENGTH_LONG).show();
 
-                }
-            });
+                    }
+                });
 
-        }catch (Exception e){
+            } catch (Exception e) {
 
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
 
+            }
+
+            if (chBxLogin.isChecked()) {
+
+                sharedPreferenc.save(context, "email", emailText.getText().toString());
+                sharedPreferenc.save(context, "password", passwordText.getText().toString());
+                sharedPreferenc.saveBoolean(context, "checkBox", true);
+
+            } else {
+
+                sharedPreferenc.save(context, "email", "");
+                sharedPreferenc.save(context, "password", "");
+                sharedPreferenc.saveBoolean(context, "checkBox", false);
+
+            }
         }
+    }
 
-        if(chBxLogin.isChecked()){
+    public void signUpLoginActivity(View view) {
 
-            sharedPreferenc.save(context,"email",emailText.getText().toString());
-            sharedPreferenc.save(context,"password",passwordText.getText().toString());
-            sharedPreferenc.saveBoolean(context,"checkBox",true);
-
-        }else{
-
-            sharedPreferenc.save(context,"email","");
-            sharedPreferenc.save(context,"password","");
-            sharedPreferenc.saveBoolean(context,"checkBox",false);
-
-        }
+        Intent intent = new Intent(getApplicationContext(), AdminPage.class);
+        startActivity(intent);
 
     }
 
-    public void signUpLoginActivity(View view){
+    private void getDataFirebase() {
 
-        Intent intent = new Intent(getApplicationContext(),AdminPage.class);
-        startActivity(intent);
 
+        String emailTextStr = emailText.getText().toString().replace(".", " ");
+
+        DatabaseReference newReference = firebaseDatabase.getReference("Companies").child("licences").child(emailTextStr).child("licence");
+        newReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                System.out.println("dataSnapshot login= " + dataSnapshot.getValue());
+
+                licenceDb = dataSnapshot.getValue().toString();
+
+                String licence = sharedPreferenc.getValue(context, "licence");
+
+                if (licenceDb.equals(licence)) {
+                    //System.out.println("dataSnapshot true= ", licenceDb.equals(licence));
+
+                    Intent intent = new Intent(getApplicationContext(), QueryPageActivity.class);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(context, "Lütfen Lisansınız İçin Winpol Bilişim ile Görüşünüz.", Toast.LENGTH_LONG).show();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 }

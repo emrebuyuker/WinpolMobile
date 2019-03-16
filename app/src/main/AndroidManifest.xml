@@ -20,7 +20,8 @@
         </activity>
         <activity android:name=".QueryPageActivity" />
         <activity android:name=".AdminPage" />
-        <activity android:name=".NewAddCompanyPage"></activity>
+        <activity android:name=".NewAddCompanyPage" />
+        <activity android:name=".LicencePage"></activity>
     </application>
 
 </manifest>
