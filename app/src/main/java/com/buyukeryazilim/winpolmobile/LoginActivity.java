@@ -33,7 +33,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_query_page);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -66,7 +66,7 @@ public class LoginActivity extends AppCompatActivity {
 
                                 FirebaseUser user = mAuth.getCurrentUser();
 
-                                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                                Intent intent = new Intent(getApplicationContext(),QueryPageActivity.class);
                                 startActivity(intent);
 
                             }
